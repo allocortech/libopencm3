@@ -322,6 +322,10 @@ enum rcc_periph_clken {
   RCC_DFSDM       = _REG_BIT(0xF0, 28),
   RCC_HRTIM       = _REG_BIT(0xF0, 29),
 
+  /* APB3 peripherals */
+  RCC_LTDCEN      = _REG_BIT(0xE4, 3),
+  RCC_WWDG1EN     = _REG_BIT(0xE4, 6),
+
   /* APB4 peripherals */
   RCC_SYSCFG      = _REG_BIT(0xF4, 1),
   RCC_LPUART1     = _REG_BIT(0xF4, 3),
@@ -343,7 +347,6 @@ enum rcc_periph_rst {
   RST_DMA2        = _REG_BIT(0x80, 1),
   RST_ADC12       = _REG_BIT(0x80, 5),
   RST_ETH1MAC     = _REG_BIT(0x80, 15),
-  RST_USB1OTGRST  = _REG_BIT(0x80, 25),
   RST_USB1OTGRST  = _REG_BIT(0x80, 25),
   RST_USB2OTGRST  = _REG_BIT(0x80, 26),
 
@@ -430,7 +433,7 @@ enum rcc_periph_rst {
   RST_HRTIM       = _REG_BIT(0x98, 29),
 
   /* APB3 peripherals */
-  RST_LTDCRST     = _REG_BIT(0x8C, 3)
+  RST_LTDCRST     = _REG_BIT(0x8C, 3),
 
   /* APB4 peripherals */
   RST_SYSCFG      = _REG_BIT(0x9C, 1),
