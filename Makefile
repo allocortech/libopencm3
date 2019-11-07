@@ -17,7 +17,7 @@
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-PREFIX		?= /usr/local/arm-none-eabi-8-2018q4/bin/arm-none-eabi-
+PREFIX		?= arm-none-eabi-
 
 STYLECHECK      := scripts/checkpatch.pl
 STYLECHECKFLAGS := --no-tree -f --terse --mailback

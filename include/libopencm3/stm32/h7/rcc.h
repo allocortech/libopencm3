@@ -122,9 +122,11 @@
 #define RCC_CFGR_MCO2PRE_SHIFT    25
 #define RCC_CFGR_MCO1PRE_SHIFT    18
 #define RCC_CFGR_MCOPRE_DIV_NONE  0x0
+#define RCC_CFGR_MCOPRE_DIV_BYP   0x1
 #define RCC_CFGR_MCOPRE_DIV_2     0x2
 #define RCC_CFGR_MCOPRE_DIV_3     0x3
 #define RCC_CFGR_MCOPRE_DIV_4     0x4
+/* Note: MCOPRE_DIV can go from 1 - 15  */
 
 /* MCO1: Microcontroller clock output 1 */
 #define RCC_CFGR_MCO1_MASK        0x7
@@ -341,6 +343,9 @@ enum rcc_periph_rst {
   RST_DMA2        = _REG_BIT(0x80, 1),
   RST_ADC12       = _REG_BIT(0x80, 5),
   RST_ETH1MAC     = _REG_BIT(0x80, 15),
+  RST_USB1OTGRST  = _REG_BIT(0x80, 25),
+  RST_USB1OTGRST  = _REG_BIT(0x80, 25),
+  RST_USB2OTGRST  = _REG_BIT(0x80, 26),
 
   /* AHB2 peripherals */
   RST_DCMI        = _REG_BIT(0xDC, 0),
@@ -424,6 +429,9 @@ enum rcc_periph_rst {
   RST_DFSDM       = _REG_BIT(0x98, 28),
   RST_HRTIM       = _REG_BIT(0x98, 29),
 
+  /* APB3 peripherals */
+  RST_LTDCRST     = _REG_BIT(0x8C, 3)
+
   /* APB4 peripherals */
   RST_SYSCFG      = _REG_BIT(0x9C, 1),
   RST_LPUART1     = _REG_BIT(0x9C, 3),
@@ -435,7 +443,6 @@ enum rcc_periph_rst {
   RST_LPTIM5      = _REG_BIT(0x9C, 12),
   RST_COMP12      = _REG_BIT(0x9C, 14),
   RST_VREF        = _REG_BIT(0x9C, 15),
-  RST_RTCAPB      = _REG_BIT(0x9C, 16),
   RST_SAI4        = _REG_BIT(0x9C, 21),
 };
 

@@ -1,21 +1,13 @@
 /** @defgroup flash_defines FLASH Defines
  *
- * @ingroup STM32F7xx_defines
+ * @ingroup STM32H7xx_defines
  *
- * @author @htmlonly &copy; @endhtmlonly 2017
- * Matthew Lai <m@matthewlai.ca>
- * @author @htmlonly &copy; @endhtmlonly 2010
- * Thomas Otto <tommi@viadmin.org>
- * @author @htmlonly &copy; @endhtmlonly 2010
- * Mark Butler <mbutler@physics.otago.ac.nz>
+ * @author @htmlonly &copy; @endhtmlonly 2019
+ * Brian Viele <vielster@allocor.tech>
  *
  */
 /*
  * This file is part of the libopencm3 project.
- *
- * Copyright (C) 2017 Matthew Lai <m@matthewlai.ca>
- * Copyright (C) 2010 Thomas Otto <tommi@viadmin.org>
- * Copyright (C) 2010 Mark Butler <mbutler@physics.otago.ac.nz>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -38,17 +30,6 @@
 #include <libopencm3/stm32/common/flash_common_f.h>
 #include <libopencm3/stm32/common/flash_common_f24.h>
 
-/*
- * Differences between H7/F7 and F4:
- * 1. 	icache and dcache are now combined into a unified ART cache. The CPU has
- * 	its own d/i-caches, but those are unrelated to this. They are on the
- *	AXIM bus.
- * 4. 	FLASH_SR_PGSERR (programming sequence error) is now FLASH_SR_ERSERR (
- *	erase sequence error).
- * 6. 	There are now two watchdogs - IWDG (independent watchdog) and WWDG (
- * 	window watchdog).
- */
-
 /**@{*/
 
 /* --- FLASH_ACR values ---------------------------------------------------- */
@@ -56,45 +37,19 @@
 /** @addtogroup flash_acr_values FLASH_ACR_VALUES
  * @ingroup flash_registers
 @{*/
-#define FLASH_ACR_ARTRST		(1 << 11)
-#define FLASH_ACR_ARTEN			(1 << 9)
-#define FLASH_ACR_PRFTEN		(1 << 8)
+#define FLASH_ACR_WRHIGHFREQ_MASK     (0x3)
+#define FLASH_ACR_WRHIGHFREQ_SHIFT    (0x4)
+#define FLASH_ACR_WRHF_VOS1_70MHZ     (0 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS1_185MHZ    (1 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS1_225MHZ    (2 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS2_55MHZ     (0 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS2_165MHZ    (1 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS2_225MHZ    (2 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS2_45MHZ     (0 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS2_135MHZ    (1 << FLASH_ACR_WRHIGHFREQ_SHIFT)
+#define FLASH_ACR_WRHF_VOS2_225MHZ    (2 << FLASH_ACR_WRHIGHFREQ_SHIFT)
 /*@}*/
 
-#define FLASH_SR_ERSERR			(1 << 7)
-
-/* --- FLASH_OPTCR values -------------------------------------------------- */
-
-#define FLASH_OPTCR_IWDG_STOP		(1 << 31)
-#define FLASH_OPTCR_IWDG_STDBY		(1 << 30)
-
-#define FLASH_OPTCR_NWRP_SHIFT		16
-#define FLASH_OPTCR_NWRP_MASK		0xff
-
-#define FLASH_OPTCR_RDP_SHIFT		8
-#define FLASH_OPTCR_RDP_MASK		0xff
-
-#define FLASH_OPTCR_IWDG_SW		(1 << 5)
-#define FLASH_OPTCR_WWDG_SW		(1 << 4)
-
-#define FLASH_OPTCR_OPTSTRT		(1 << 1)
-#define FLASH_OPTCR_OPTLOCK		(1 << 0)
-
-/* --- FLASH_OPTCR1 values ------------------------------------------------- */
-#define FLASH_OPTCR1_BOOT_ADD1_MASK	0xffff
-#define FLASH_OPTCR1_BOOT_ADD1_SHIFT	16
-#define FLASH_OPTCR1_BOOT_ADD0_MASK	0xffff
-#define FLASH_OPTCR1_BOOT_ADD0_SHIFT	0
-
-/* --- Function prototypes ------------------------------------------------- */
-
-BEGIN_DECLS
-
-void flash_clear_erserr_flag(void);
-void flash_art_enable(void);
-void flash_art_reset(void);
-
-END_DECLS
 /**@}*/
 
 #endif

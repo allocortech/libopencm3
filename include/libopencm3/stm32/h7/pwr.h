@@ -37,7 +37,7 @@ LGPL License Terms @ref lgpl_license
 /**@{*/
 
 /** @defgroup pwr_registers PWR Registers
- * @ingroup STM32F_pwr_defines
+ * @ingroup STM32H_pwr_defines
 @{*/
 /** Power control register (PWR_CR1) */
 #define PWR_CR1         MMIO32(POWER_CONTROL_BASE + 0x00)
@@ -62,15 +62,15 @@ LGPL License Terms @ref lgpl_license
 
 /*@}*/
 
-/* VOS[15:14]: Regulator voltage scaling output selection */
+/** VOS[15:14]: Regulator voltage scaling output selection */
 #define PWR_CR1_SVOS_SHIFT        14
-#define PWR_CR1_SVOS_SCALE_3       (0x3 << PWR_CR1_SVOS_SHIFT)
-#define PWR_CR1_SVOS_SCALE_4       (0x2 << PWR_CR1_SVOS_SHIFT)
-#define PWR_CR1_SVOS_SCALE_5       (0x3 << PWR_CR1_SVOS_SHIFT)
-#define PWR_CR1_SVOS_MASK          (0x3 << PWR_CR1_SVOS_SHIFT)
+#define PWR_CR1_SVOS_SCALE_3      (0x3 << PWR_CR1_SVOS_SHIFT)
+#define PWR_CR1_SVOS_SCALE_4      (0x2 << PWR_CR1_SVOS_SHIFT)
+#define PWR_CR1_SVOS_SCALE_5      (0x1 << PWR_CR1_SVOS_SHIFT)
+#define PWR_CR1_SVOS_MASK         (0x3 << PWR_CR1_SVOS_SHIFT)
 
-/** VOSRDY: Regulator voltage scaling output selection ready bit */
-#define PWR_CSR1_ACTVOSRDY        (1 << 13)
+/** DBP[8]: Disable backup domain write protection. */
+#define PWR_CR1_DBP               (1 << 8)
 
 /** PVDO: PVD output */
 #define PWR_CSR1_PVDO             (1 << 4)
