@@ -1,22 +1,7 @@
-/** @defgroup rcc_defines RCC Defines
- *
- * @brief <b>Defined Constants and Types for the STM32H7xx Reset and Clock
- * Control</b>
- *
- * @ingroup STM32H7xx_defines
- *
- * @version 1.0.0
- *
- * @author Brian Viele <vielster@allocor.tech>
- *
- * @date November 2019
- *
- * LGPL License Terms @ref lgpl_license
- *  */
 /*
  * This file is part of the libopencm3 project.
  *
- * Copyright (C) 2015 Karl Palsson <karlp@tweak.net.au>
+ * Copyright (C) 2019 Brian Viele <vielster@allocor.tech>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -43,7 +28,9 @@
 #define RCC_CR                    MMIO32(RCC_BASE + 0x000)
 #define RCC_CFGR                  MMIO32(RCC_BASE + 0x010)
 
-/* --- RCC_CR values ------------------------------------------------------- */
+/** @addtogroup rcc_cr_values RCC_CR_VALUES
+ * @ingroup rcc_registers
+@{*/
 #define RCC_CR_PLL3AIRDY          (1 << 29)
 #define RCC_CR_PLL3AION           (1 << 28)
 #define RCC_CR_PLL2RDY            (1 << 27)
@@ -68,8 +55,11 @@
 #define RCC_CR_HSIRDY             (1 << 2)
 #define RCC_CR_HSIKERON           (1 << 1)
 #define RCC_CR_HSION              (1 << 0)
+/**@}*/
 
-/* Base RCC reset and clock control registers. */
+/** @addtogroup rcc_rstr_values RCC_RSTR_VALUES
+ * @ingroup rcc_registers
+@{*/
 #define RCC_AHB1RSTR              MMIO32(RCC_BASE + 0x080)
 #define RCC_AHB2RSTR              MMIO32(RCC_BASE + 0x084)
 #define RCC_AHB3RSTR              MMIO32(RCC_BASE + 0x07C)
@@ -103,10 +93,11 @@
 #define RCC_PLLSAICFGR            MMIO32(RCC_BASE + 0x88)
 #define RCC_DCKCFGR1              MMIO32(RCC_BASE + 0x8C)
 #define RCC_DCKCFGR2              MMIO32(RCC_BASE + 0x90)
+/**@}*/
 
-/* --- RCC_CFGR values ----------------------------------------------------- */
-/* TODO: Confirm functionality of these blocks. */
-
+/** @addtogroup rcc_cfgr_values RCC_CFGR_VALUES
+ * @ingroup rcc_registers
+@{*/
 /* MCO2: Microcontroller clock output 2 */
 #define RCC_CFGR_MCO2_MASK        0x7
 #define RCC_CFGR_MCO2_SHIFT       29
@@ -158,11 +149,12 @@
 #define RCC_CFGR_SW_CSI           0x1
 #define RCC_CFGR_SW_HSE           0x2
 #define RCC_CFGR_SW_PLL1          0x3
-
 /**@}*/
 
 
-/* --- RCC_BDCR values ----------------------------------------------------- */
+/** @addtogroup rcc_bdcr_values RCC_BDCR_VALUES
+ * @ingroup rcc_registers
+@{*/
 #define RCC_BDCR_BDRST            (1 << 16)
 #define RCC_BDCR_RTCEN            (1 << 15)
 #define RCC_BDCR_RTCSEL_MASK      0x3
@@ -180,42 +172,18 @@
 #define RCC_BDCR_LSEBYP           (1 << 2)
 #define RCC_BDCR_LSERDY           (1 << 1)
 #define RCC_BDCR_LSEON            (1 << 0)
+/**@}*/
 
-/* --- RCC_CSR values ------------------------------------------------------ */
+/** @addtogroup rcc_bdcr_values RCC_CSR_VALUES
+ * @ingroup rcc_registers
+@{*/
 #define RCC_CSR_LSIRDY            (1 << 1)
 #define RCC_CSR_LSION             (1 << 0)
+/**@}*/
 
 extern uint32_t rcc_ahb_frequency;
 extern uint32_t rcc_apb1_frequency;
 extern uint32_t rcc_apb2_frequency;
-
-enum rcc_clock_3v3 {
-  RCC_CLOCK_3V3_216MHZ,
-  RCC_CLOCK_3V3_168MHZ,
-  RCC_CLOCK_3V3_120MHZ,
-  RCC_CLOCK_3V3_72MHZ,
-  RCC_CLOCK_3V3_48MHZ,
-  RCC_CLOCK_3V3_24MHZ,
-  RCC_CLOCK_3V3_END
-};
-
-// TODO: Customize this configuration based on the PLL options.
-struct rcc_clock_scale {
-  uint16_t plln;
-  uint8_t pllp;
-  uint8_t pllq;
-  uint32_t flash_waitstates;
-  uint8_t hpre;
-  uint8_t ppre1;
-  uint8_t ppre2;
-  enum pwr_svos_scale vos_scale;
-  uint8_t overdrive;
-  uint32_t ahb_frequency;
-  uint32_t apb1_frequency;
-  uint32_t apb2_frequency;
-};
-
-extern const struct rcc_clock_scale rcc_3v3[RCC_CLOCK_3V3_END];
 
 enum rcc_osc {
   RCC_PLL,

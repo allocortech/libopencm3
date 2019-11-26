@@ -56,7 +56,6 @@
 
 /* APB4 Peripherals */
 #define SAI4_BASE           0x58005400U
-#define Reserved_BASE       0x58004C00U
 #define IWDG1_BASE          0x58004800U
 #define RTC_BASE            0x58004000U
 #define VREF_BASE           0x58003C00U
@@ -78,10 +77,10 @@
 #define QUADSPI_BASE        0x52005000U
 #define FMCC_BASE           0x52004000U
 #define JPEG_BASE           0x52003000U
+#define FLASH_MEM_INTERFACE_BASE  0x52002000U
 #define CHROMART_BASE       0x52001000U
 #define MDMA_BASE           0x52000000U
 #define GPV_BASE            0x51000000U
-#define FLASH_MEM_INTERFACE_BASE  0x52002000U
 
 /* APB3 Peripherals */
 #define WWDG1_BASE          0x50003000U

@@ -18,9 +18,4 @@ uint32_t rcc_ahb_frequency = 64000000;
 uint32_t rcc_apb1_frequency = 64000000;
 uint32_t rcc_apb2_frequency = 64000000;
 
-// All PLL configurations without PLLM. PLLM should be set to the input clock
-// frequency in MHz.
-const struct rcc_clock_scale rcc_3v3[] = {
-};
-
 /**@}*/
