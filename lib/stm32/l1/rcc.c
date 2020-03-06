@@ -39,6 +39,7 @@ system clock. Not all possible configurations are included.
  */
 /**@{*/
 
+#include <libopencm3/cm3/assert.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/pwr.h>
@@ -555,4 +556,64 @@ void rcc_clock_setup_pll(const struct rcc_clock_scale *clock)
 	rcc_apb2_frequency = clock->apb2_frequency;
 }
 
+/*---------------------------------------------------------------------------*/
+/** @brief Get the peripheral clock speed for the specified clock
+ * @param periph peripheral of desire, eg XXX_BASE
+ * @param sel peripheral clock source
+ */
+uint32_t rcc_get_peripheral_clk_freq(uint32_t periph)
+{
+	uint8_t ppre1 = (RCC_CFGR >> RCC_CFGR_PPRE1_SHIFT) & RCC_CFGR_PPRE1_MASK;
+	uint8_t ppre2 = (RCC_CFGR >> RCC_CFGR_PPRE2_SHIFT) & RCC_CFGR_PPRE2_MASK;
+
+	/* Get clock settings based on base address.
+	 * 	Note: Clock mappings can be inferred from RCC_APB1ENR and RCC_APB2ENR. */
+	switch (periph) {
+
+		/* Handle APB1 timers, and apply multiplier if necessary. */
+		case TIM2_BASE:
+		case TIM3_BASE:
+		case TIM4_BASE:
+		case TIM5_BASE:
+		case TIM6_BASE:
+		case TIM7_BASE:
+			return (ppre1 == RCC_CFGR_PPRE1_HCLK_NODIV) ? rcc_apb1_frequency
+				: 2 * rcc_apb1_frequency;
+
+		/* Handle all APB1 perihperals as a fallthrough, no-op but not default. */
+		case LCD_BASE:
+		case WWDG_BASE:
+		case SPI2_BASE:
+		case SPI3_BASE:
+		case USART2_BASE:
+		case USART3_BASE:
+		case USART4_BASE:
+		case USART5_BASE:
+		case I2C1_BASE:
+		case I2C2_BASE:
+		case USB_DEV_FS_BASE:
+		case USB_PMA_BASE:
+		case POWER_CONTROL_BASE:
+		case DAC_BASE:
+		case COMP_BASE:
+			return rcc_apb1_frequency;
+
+		/* Handle APB2 timers, and apply multiplier if necessary. */
+		case TIM9_BASE:
+		case TIM10_BASE:
+		case TIM11_BASE:
+			return (ppre2 == RCC_CFGR_PPRE2_HCLK_NODIV) ? rcc_apb2_frequency
+				: 2 * rcc_apb2_frequency;
+
+		/* Handle all APB2 perihperals as a fallthrough. */
+		case ADC1_BASE:
+		case SDIO_BASE:
+		case SPI1_BASE:
+		case USART1_BASE:
+			return rcc_apb2_frequency;
+
+		default:
+			cm3_assert_not_reached();
+	}
+}
 /**@}*/

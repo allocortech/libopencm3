@@ -37,9 +37,9 @@ Devices can have up to 3 USARTs and 2 UARTs.
 /*---------------------------------------------------------------------------*/
 /** @brief USART Set Baudrate.
 
-The baud rate is computed from the APB high-speed prescaler clock (for
-USART1/6) or the APB low-speed prescaler clock (for other USARTs). These values
-must be correctly set before calling this function (refer to the
+The baud rate is computed from the APB slock associated with the USART/UART
+device. The RCC must be configured for desired frequency before this function
+is called or this may use the incorrect clock for calculations (refer to the
 rcc_clock_setup-* functions in RCC).
 
 Note: For LPUART, baudrates over 2**24 (~16.7 Mbaud) may overflow
@@ -49,20 +49,9 @@ the calculation and are therefore not supported by this function.
 usart_reg_base
 @param[in] baud unsigned 32 bit. Baud rate specified in Hz.
 */
-
 void usart_set_baudrate(uint32_t usart, uint32_t baud)
 {
-	uint32_t clock = rcc_apb1_frequency;
-
-#if defined USART1
-	if ((usart == USART1)
-#if defined USART6
-		|| (usart == USART6)
-#endif
-		) {
-		clock = rcc_apb2_frequency;
-	}
-#endif
+	uint32_t clock = rcc_get_peripheral_clk_freq(usart);
 
 	/*
 	 * Yes it is as simple as that. The reference manual is
@@ -80,7 +69,6 @@ void usart_set_baudrate(uint32_t usart, uint32_t baud)
 		return;
 	}
 #endif
-
 	USART_BRR(usart) = (clock + baud / 2) / baud;
 }
 

@@ -36,6 +36,7 @@
  */
 
 /**@{*/
+#include <libopencm3/cm3/assert.h>
 #include <libopencm3/stm32/rcc.h>
 
 /* Set the default clock frequencies after reset. */
@@ -434,4 +435,113 @@ void rcc_set_rtc_clock_source(enum rcc_osc clk)
 	}
 }
 
+/* Helper to calculate the frequency of a UART/I2C based on the apb and clksel value. */
+static uint32_t rcc_uart_i2c_clksel_freq_hz(uint32_t apb_clk, uint8_t clksel) {
+	uint8_t hpre = (RCC_CFGR >> RCC_CFGR_HPRE_SHIFT) & RCC_CFGR_HPRE_MASK;
+	switch (clksel) {
+		case RCC_CCIPR_USARTxSEL_APB:
+			return apb_clk;
+		case RCC_CCIPR_USARTxSEL_SYS:
+			return rcc_ahb_frequency * rcc_get_div_from_hpre(hpre);
+			break;
+		case RCC_CCIPR_USARTxSEL_HSI16:
+			return 16000000U;
+			break;
+		default:
+			cm3_assert_not_reached();
+	}
+}
+
+/*---------------------------------------------------------------------------*/
+/** @brief Get the peripheral clock speed for the specified clock
+ * @param periph peripheral of desire, eg XXX_BASE
+ * @param sel peripheral clock source
+ */
+uint32_t rcc_get_peripheral_clk_freq(uint32_t periph)
+{
+	uint8_t clksel;
+	uint8_t ppre1 = (RCC_CFGR >> RCC_CFGR_PPRE1_SHIFT) & RCC_CFGR_PPRE1_MASK;
+	uint8_t ppre2 = (RCC_CFGR >> RCC_CFGR_PPRE2_SHIFT) & RCC_CFGR_PPRE2_MASK;
+
+	/* Get clock settings based on base address.
+	 * 	Note: Clock mappings can be inferred from RCC_APB1ENR and RCC_APB2ENR. */
+	switch (periph) {
+		/* CLKSEL Devices that all utilize same set APB/SYSCLK/HSI16/LSE. */
+		case USART1_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_USART1SEL_SHIFT) & RCC_CCIPR_USARTxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb2_frequency, clksel);
+		case USART2_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_USART2SEL_SHIFT) & RCC_CCIPR_USARTxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case USART3_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_USART3SEL_SHIFT) & RCC_CCIPR_USARTxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case UART4_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_UART4SEL_SHIFT) & RCC_CCIPR_USARTxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case UART5_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_UART5SEL_SHIFT) & RCC_CCIPR_USARTxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case LPUART1_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_LPUART1SEL_SHIFT) & RCC_CCIPR_LPUART1SEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case I2C1_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_I2C1SEL_SHIFT) & RCC_CCIPR_I2CxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case I2C2_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_I2C2SEL_SHIFT) & RCC_CCIPR_I2CxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+		case I2C3_BASE:
+			clksel = (RCC_CCIPR >> RCC_CCIPR_I2C3SEL_SHIFT) & RCC_CCIPR_I2CxSEL_MASK;
+			return rcc_uart_i2c_clksel_freq_hz(rcc_apb1_frequency, clksel);
+
+		/* Handle APB1 timers, and apply multiplier if necessary. */
+		case TIM2_BASE:
+		case TIM3_BASE:
+		case TIM4_BASE:
+		case TIM6_BASE:
+		case TIM7_BASE:
+			return (ppre1 == RCC_CFGR_PPRE1_NODIV) ? rcc_apb1_frequency
+				: 2 * rcc_apb1_frequency;
+
+
+		/* Handle all APB1 perihperals as a fallthrough, no-op but not default. */
+		case LCD_BASE:
+		case WWDG_BASE:
+		case SPI2_BASE:
+		case SPI3_BASE:
+		case CRS_BASE:
+		case BX_CAN1_BASE:
+		case POWER_CONTROL_BASE:
+		case DAC_BASE:
+			return rcc_apb1_frequency;
+
+		/* Handle APB2 timers, and apply multiplier if necessary. */
+		case TIM1_BASE:
+		case TIM8_BASE:
+		case TIM15_BASE:
+		case TIM16_BASE:
+		case TIM17_BASE:
+			return (ppre2 == RCC_CFGR_PPRE2_NODIV) ? rcc_apb2_frequency
+				: 2 * rcc_apb2_frequency;
+			break;
+
+		/* Handle all APB2 perihperals as a fallthrough. */
+		case FIREWALL_BASE:
+		case SPI1_BASE:
+			return rcc_apb2_frequency;
+			break;
+
+		/* Bad address or unsupported device with special handling not yet implemented. */
+		case ADC1_BASE:
+		case SAI1_BASE:
+		case SAI2_BASE:
+		case LPTIM1_BASE:
+		case LPTIM2_BASE:
+		case USB_DEV_FS_BASE:
+		case USB_PMA_BASE:
+		default:
+			cm3_assert_not_reached();
+	}
+}
 /**@}*/
