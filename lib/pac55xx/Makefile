@@ -38,6 +38,7 @@ ARFLAGS		= rcs
 OBJS += gpio.o
 OBJS += can.o
 OBJS += usart.o
+OBJS += ccs.o
 
 VPATH += ../cm3
 
