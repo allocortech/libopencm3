@@ -1,5 +1,4 @@
 /**
- * ccs.c
  * @brief <b>PAC55xxxx CCS Driver</b>
  * @author @htmlonly &copy; @endhtmlonly 2020 Kevin Stefanik <kevin@allocor.tech>
  * @date March 7, 2020
@@ -29,14 +28,13 @@
 #include <libopencm3/pac55xx/memctl.h>
 #include <libopencm3/cm3/assert.h>
 
-/** Global clock tree structure that is configured by ccs_configure_clocks */
-uint32_t ccs_extclk_frequency = CCS_ROSC_FREQ;
-uint32_t ccs_frclk_frequency = CCS_ROSC_FREQ;
-uint32_t ccs_sclk_frequency = CCS_ROSC_FREQ;
-uint32_t ccs_pll_clk_frequency = 0;
-uint32_t ccs_hclk_frequency = CCS_ROSC_FREQ;
-uint32_t ccs_aclk_frequency = CCS_ROSC_FREQ;
-uint32_t ccs_pclk_frequency = CCS_ROSC_FREQ;
+static volatile uint32_t ccs_extclk_frequency = 0;
+static volatile uint32_t ccs_frclk_frequency = CCS_ROSC_FREQ;
+static volatile uint32_t ccs_sclk_frequency = CCS_ROSC_FREQ;
+static volatile uint32_t ccs_pll_clk_frequency = 0;
+static volatile uint32_t ccs_hclk_frequency = CCS_ROSC_FREQ;
+static volatile uint32_t ccs_aclk_frequency = CCS_ROSC_FREQ;
+static volatile uint32_t ccs_pclk_frequency = CCS_ROSC_FREQ;
 
 void ccs_frclkmux_select(uint32_t sel) {
 	CCSCTL = (CCSCTL & ~CCS_CTL_FRCLKMUXSEL(CCS_CTL_FRCLKMUXSEL_MASK)) | CCS_CTL_FRCLKMUXSEL(sel);
@@ -96,13 +94,13 @@ void ccs_stclk_sleep_disable(void) {
 	CCSCTL &= ~CCS_CTL_STCLKSLPEN;
 }
 void ccs_set_pclkdiv(uint32_t div) {
-	CCSCTL = (CCSCTL & ~CCS_CTL_PCLKDIV(CCS_CTL_PCLKDIV_MASK)) | CCS_CTL_PCLKDIV(div);
+	CCSCTL = (CCSCTL & ~CCS_CTL_PCLKDIV(8)) | CCS_CTL_PCLKDIV(div);
 }
 void ccs_set_aclkdiv(uint32_t div) {
-	CCSCTL = (CCSCTL & ~CCS_CTL_ACLKDIV(CCS_CTL_ACLKDIV_MASK)) | CCS_CTL_ACLKDIV(div);
+	CCSCTL = (CCSCTL & ~CCS_CTL_ACLKDIV(8)) | CCS_CTL_ACLKDIV(div);
 }
 void ccs_set_hclkdiv(uint32_t div) {
-	CCSCTL = (CCSCTL & ~CCS_CTL_HCLKDIV(CCS_CTL_HCLKDIV_MASK)) | CCS_CTL_HCLKDIV(div);
+	CCSCTL = (CCSCTL & ~CCS_CTL_HCLKDIV(8)) | CCS_CTL_HCLKDIV(div);
 }
 void ccs_pll_enable(void) {
 	CCSPLLCTL |= CCS_PLLCTL_PLLEN;
@@ -125,11 +123,15 @@ void ccs_pll_set_outdiv(uint32_t div) {
 void ccs_pll_set_indiv(uint32_t div) {
 	if (div <= 15 && div >= 1) {
 		CCSPLLCTL = (CCSPLLCTL & ~CCS_PLLCTL_PLLINDIV(CCS_PLLCTL_PLLINDIV_MASK)) | CCS_PLLCTL_PLLINDIV(div);
+	} else {
+		cm3_assert_not_reached();
 	}
 }
 void ccs_pll_set_fbdiv(uint32_t div) {
 	if (div <= 16383 && div >= 4) {
 		CCSPLLCTL = (CCSPLLCTL & ~CCS_PLLCTL_PLLFBDIV(CCS_PLLCTL_PLLFBDIV_MASK)) | CCS_PLLCTL_PLLFBDIV(div);
+	} else {
+		cm3_assert_not_reached();
 	}
 }
 void css_pll_config_enable(uint32_t indiv, uint32_t fbdiv, uint32_t outdiv) {
@@ -169,9 +171,7 @@ uint32_t ccs_get_peripheral_clk_freq(uint32_t periph, uint32_t select) {
 			return ccs_hclk_frequency;
 		default:
 			cm3_assert_not_reached();
-			break;
 	}
-	return 0; /* 0 if unsupported */
 }
 
 void ccs_reset_clocks(void) {
@@ -181,22 +181,21 @@ void ccs_reset_clocks(void) {
 	CCSPLLCTL = 0;
 }
 
-int ccs_configure_clocks(const struct ccs_clk_config *config) {
-	FLASHLOCK = FLASHLOCK_ALLOW_MEMCTL_WRITE;
+void ccs_configure_clocks(const struct ccs_clk_config *config) {
+	MEMCTL_FLASHLOCK = MEMCTL_FLASHLOCK_ALLOW_MEMCTL_WRITE;
 
-	// set safe defaults:
-	ccs_reset_clocks();
+	ccs_reset_clocks();  /* set safe defaults */
 	ccs_frclkmux_select(CCS_CTL_FRCLKMUXSEL_ROSC);
 	ccs_sclkmux_select_frclk();
-	MEMCTL &= ~MEMCTL_MCLKSEL; // select ROSCCLK
+	memctl_flash_select_roscclk();
 
-	if (config->mem_cachedis) {
-		MEMCTL |= MEMCTL_CACHEDIS; // turn off Flash Cache
+	if (config->mem_enable_cache) {
+		memctl_flash_cache_enable();
 	} else {
-		MEMCTL &= ~MEMCTL_CACHEDIS; // turn on Flash Cache
+		memctl_flash_cache_disable();
 	}
 
-	ccs_frclkmux_select(CCS_CTL_FRCLKMUXSEL_CLKREF); // switch frclk to 4MHz CLKREF
+	ccs_frclkmux_select(CCS_CTL_FRCLKMUXSEL_CLKREF); /* switch frclk to 4MHz CLKREF */
 
 	switch (config->frclk_source) {
 		case CCS_CTL_FRCLKMUXSEL_ROSC:
@@ -210,51 +209,43 @@ int ccs_configure_clocks(const struct ccs_clk_config *config) {
 		case CCS_CTL_FRCLKMUXSEL_EXTCLK:
 			if (config->extclk_frequency > CCS_EXTCLK_MAX_FREQ
 					|| config->extclk_frequency == 0) {
-				FLASHLOCK = 0;
-				return -1;
+				cm3_assert_not_reached();
 			}
 			ccs_frclkmux_select(CCS_CTL_FRCLKMUXSEL_EXTCLK);
 			ccs_frclk_frequency = ccs_extclk_frequency = config->extclk_frequency;
 			break;
 		default:
-			FLASHLOCK = 0;
-			return -1;
+			cm3_assert_not_reached();
 	}
 
 	if (config->sclk_source == CCS_CTL_SCLKMUXSEL_FRCLK) {
 		ccs_set_hclkdiv(config->hclkdiv);
 		ccs_set_aclkdiv(config->aclkdiv);
-		// set wait state
-		MEMCTL = (MEMCTL & ~MEMCTL_WSTATE(MEMCTL_WSTATE_MASK)) | MEMCTL_WSTATE(config->mem_wstate);
+		memctl_flash_set_wstate(config->mem_wstate);
 		ccs_sclkmux_select_frclk();
-		// set MCLKDIV
-		MEMCTL = (MEMCTL & ~MEMCTL_MCLKDIV(MEMCTL_MCLKDIV_MASK)) | MEMCTL_MCLKDIV(config->mem_mclkdiv);
-		// set MCLKSEL
+		memctl_flash_set_mclkdiv(config->mem_mclkdiv);
 		if (config->mem_mclksel == false) {
-			MEMCTL &= ~MEMCTL_MCLKSEL; // select ROSCCLK
+			memctl_flash_select_roscclk();
 		} else {
-			MEMCTL |= MEMCTL_MCLKSEL; // select MCLK
+			memctl_flash_select_mclk();
 		}
 		ccs_sclk_frequency = ccs_frclk_frequency;
 	} else if (config->sclk_source == CCS_CTL_SCLKMUXSEL_PLLCLK) {
 		css_pll_config_enable(config->pll_indiv, config->pll_fbdiv, config->pll_outdiv);
 		ccs_set_hclkdiv(config->hclkdiv);
 		ccs_set_aclkdiv(config->aclkdiv);
-		// set wait state
-		MEMCTL = (MEMCTL & ~MEMCTL_WSTATE(MEMCTL_WSTATE_MASK)) | MEMCTL_WSTATE(config->mem_wstate);
+		memctl_flash_set_wstate(config->mem_wstate);
 		ccs_sclkmux_select_pllclk();
-		// set MCLKDIV
-		MEMCTL = (MEMCTL & ~MEMCTL_MCLKDIV(MEMCTL_MCLKDIV_MASK)) | MEMCTL_MCLKDIV(config->mem_mclkdiv);
+		memctl_flash_set_mclkdiv(config->mem_mclkdiv);
 		if (config->mem_mclksel == false) {
-			MEMCTL &= ~MEMCTL_MCLKSEL; // select ROSCCLK
+			memctl_flash_select_roscclk();
 		} else {
-			MEMCTL |= MEMCTL_MCLKSEL; // select MCLK
+			memctl_flash_select_mclk();
 		}
 		ccs_pll_clk_frequency = ((ccs_frclk_frequency * config->pll_fbdiv) / config->pll_indiv) >> config->pll_outdiv;
 		ccs_sclk_frequency = ccs_pll_clk_frequency;
 	} else {
-		FLASHLOCK = 0;
-		return -1;
+		cm3_assert_not_reached();
 	}
 	ccs_set_pclkdiv(config->pclkdiv);
 	ccs_pclk_enable();
@@ -262,10 +253,9 @@ int ccs_configure_clocks(const struct ccs_clk_config *config) {
 	ccs_adcclk_enable();
 	ccs_stclk_sleep_disable();
 
-	ccs_hclk_frequency = ccs_sclk_frequency / (config->hclkdiv + 1);
-	ccs_aclk_frequency = ccs_sclk_frequency / (config->aclkdiv + 1);
-	ccs_pclk_frequency = ccs_hclk_frequency / (config->pclkdiv + 1);
+	ccs_hclk_frequency = ccs_sclk_frequency / config->hclkdiv;
+	ccs_aclk_frequency = ccs_sclk_frequency / config->aclkdiv;
+	ccs_pclk_frequency = ccs_hclk_frequency / config->pclkdiv;
 
-	FLASHLOCK = 0;
-	return 0;
+	MEMCTL_FLASHLOCK = MEMCTL_FLASHLOCK_CLEAR;
 }

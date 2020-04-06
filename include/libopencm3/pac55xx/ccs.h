@@ -40,11 +40,11 @@
 /** @defgroup ccs_frequencies CCS Frequencies
 @{*/
 /** Ring Oscillator Frequency */
-#define CCS_ROSC_FREQ       (16000000ul)
+#define CCS_ROSC_FREQ       (16000000U)
 /** Internally generated and trimmed 4MHz clock */
-#define CCS_CLKREF_FREQ     ( 4000000ul)
+#define CCS_CLKREF_FREQ     ( 4000000U)
 /** Maximum external clock frequency */
-#define CCS_EXTCLK_MAX_FREQ (20000000ul)
+#define CCS_EXTCLK_MAX_FREQ (20000000U)
 /**@}*/
 
 /** @defgroup ccs_ctl_reg Clock Control Register
@@ -70,25 +70,20 @@
 #define CCS_CTL_STCLKSLPEN BIT15
 #define CCS_CTL_PCLKDIV_MASK (0x07)
 #define CCS_CTL_PCLKDIV_SHIFT (16)
-#define CCS_CTL_PCLKDIV(div) (((div) & CCS_CTL_PCLKDIV_MASK) << CCS_CTL_PCLKDIV_SHIFT)
+/* Supported PCLK divisors: 1-8 */
+#define CCS_CTL_PCLKDIV(div) (((div-1) & CCS_CTL_PCLKDIV_MASK) << CCS_CTL_PCLKDIV_SHIFT)
 #define CCS_CTL_ACLKDIV_MASK (0x07)
 #define CCS_CTL_ACLKDIV_SHIFT (20)
-#define CCS_CTL_ACLKDIV(div) (((div) & CCS_CTL_ACLKDIV_MASK) << CCS_CTL_ACLKDIV_SHIFT)
+/* Supported ACLK divisors: 1-8 */
+#define CCS_CTL_ACLKDIV(div) (((div-1) & CCS_CTL_ACLKDIV_MASK) << CCS_CTL_ACLKDIV_SHIFT)
 #define CCS_CTL_HCLKDIV_MASK (0x07)
 #define CCS_CTL_HCLKDIV_SHIFT (24)
-#define CCS_CTL_HCLKDIV(div) (((div) & CCS_CTL_HCLKDIV_MASK) << CCS_CTL_HCLKDIV_SHIFT)
+/* Supported HCLK divisors: 1-8 */
+#define CCS_CTL_HCLKDIV(div) (((div-1) & CCS_CTL_HCLKDIV_MASK) << CCS_CTL_HCLKDIV_SHIFT)
 #define CCS_CTL_USAMODE BIT28
 #define CCS_CTL_USBMODE BIT29
 #define CCS_CTL_USCMODE BIT30
 #define CCS_CTL_USDMODE BIT31
-#define CCS_CTL_CLKDIV1     (0)
-#define CCS_CTL_CLKDIV2     (1)
-#define CCS_CTL_CLKDIV3     (2)
-#define CCS_CTL_CLKDIV4     (3)
-#define CCS_CTL_CLKDIV5     (4)
-#define CCS_CTL_CLKDIV6     (5)
-#define CCS_CTL_CLKDIV7     (6)
-#define CCS_CTL_CLKDIV8     (7)
 /**@}*/
 
 /** @defgroup ccs_pllctl_reg CCS PLL Control Register
@@ -148,8 +143,9 @@
 #define CCS_PFMUXSELR CCS_MUXSELR(CCS_PORTF)
 #define CCS_PGMUXSELR CCS_MUXSELR(CCS_PORTG)
 #define CCS_MUXSELR_MASK 0x7
-#define CCS_MUXSELR_MASK_PIN(pin) (CCS_MUXSELR_MASK << ((pin)) * 4)
-#define CCS_MUXSELR_VAL(pin, mx) (((mx)&CCS_MUXSELR_MASK) << ((pin)*4))
+#define CCS_MUXSELR_MASK_PIN(pin) (CCS_MUXSELR_MASK << ((pin) * 4))
+#define CCS_MUXSELR_VAL(pin, muxsel) (((muxsel) & CCS_MUXSELR_MASK) << ((pin) * 4))
+
 /* Enum type for port function setting for type specificity. */
 typedef enum {
 	CCS_MUXSEL_GPIO = 0,
@@ -202,7 +198,7 @@ typedef enum {
 #define CCS_PFDSR CCS_DSR(CCS_PORTF)
 #define CCS_PGDSR CCS_DSR(CCS_PORTG)
 #define CCS_DSR_MASK 0x7
-#define CCS_DSR_MASK_PIN(pin) (CCS_DSR_MASK << ((pin)) * 4)
+#define CCS_DSR_MASK_PIN(pin) (CCS_DSR_MASK << ((pin) * 4))
 #define CCS_DSR_DS_VAL(pin, ds) (((ds)&CCS_DSR_MASK) << ((pin)*4))
 #define CCS_DSR_SCHMIDT_PIN(pin) (BIT0 << (((pin)*4) + 3))
 
@@ -239,7 +235,10 @@ BEGIN_DECLS
 
 /**
  * Select the source for FRCLK.
- * @param[in] sel  One of ccs_ctl_frclkmuxsel_t.
+ * @param[in] sel  one of:
+ *   - /ref CCS_CTL_FRCLKMUXSEL_ROSC - 16MHz ring oscillator
+ *   - /ref CCS_CTL_FRCLKMUXSEL_CLKREF - trimmed 4MHz clock
+ *   - /ref CCS_CTL_FRCLKMUXSEL_EXTCLK
  */
 void ccs_frclkmux_select(uint32_t sel);
 /** Enable the 16MHz Ring oscillator */
@@ -280,17 +279,17 @@ void ccs_stclk_sleep_enable(void);
 void ccs_stclk_sleep_disable(void);
 /**
  * Set the divisor for the Peripheral Clock.
- * @param[in] div  One of CCS_CTL_CLKDIVx.
+ * @param[in] div  PCLK Divisor: 1-8.
  */
 void ccs_set_pclkdiv(uint32_t div);
 /**
  * Set the divisor for the Auxiliary Clock.
- * @param[in] div  One of CCS_CTL_CLKDIVx.
+ * @param[in] div  ACLK Divisor: 1-8.
  */
 void ccs_set_aclkdiv(uint32_t div);
 /**
  * Set the divisor for the AHB Clock.
- * @param[in] div  One of CCS_CTL_CLKDIVx.
+ * @param[in] div  HCLK Divisor: 1-8.
  */
 void ccs_set_hclkdiv(uint32_t div);
 /** Enable the PLL */
@@ -307,7 +306,11 @@ void ccs_pll_bypass_enable(void);
 void ccs_pll_bypass_disable(void);
 /**
  * Set the output divisor.
- * @param[in] div  Output divisor, one of CCS_PLLCTL_PLLOUTDIVx.
+ * @param[in] div  Output divisor, one of:
+ *   - /ref CCS_PLLCTL_PLLOUTDIV1
+ *   - /ref CCS_PLLCTL_PLLOUTDIV2
+ *   - /ref CCS_PLLCTL_PLLOUTDIV4
+ *   - /ref CCS_PLLCTL_PLLOUTDIV8
  */
 void ccs_pll_set_outdiv(uint32_t div);
 /**
@@ -324,7 +327,11 @@ void ccs_pll_set_fbdiv(uint32_t div);
  * Configure the CCS PLL, enable it, and wait for lock.
  * @param[in] indiv  Input divisor, 1-15.
  * @param[in] fbdiv  Feedback divisor, 4-16383.
- * @param[in] outdiv  Output divisor, one of CCS_PLLCTL_PLLOUTDIVx.
+ * @param[in] outdiv  Output divisor, one of:
+ *   - /ref CCS_PLLCTL_PLLOUTDIV1
+ *   - /ref CCS_PLLCTL_PLLOUTDIV2
+ *   - /ref CCS_PLLCTL_PLLOUTDIV4
+ *   - /ref CCS_PLLCTL_PLLOUTDIV8
  */
 void css_pll_config_enable(uint32_t indiv, uint32_t fbdiv, uint32_t outdiv);
 /**
@@ -353,14 +360,13 @@ struct ccs_clk_config {
 	uint32_t mem_wstate;                /**< Number of Flash Read wait states */
 	uint32_t mem_mclkdiv;               /**< Divisor from HCLK to MCLK */
 	bool mem_mclksel;                   /**< false: ROSCLK, true: HCLK/MCLK */
-	bool mem_cachedis;                  /**< false: enable cache, true: disable cache */
+	bool mem_enable_cache;              /**< false: disable cache, true: enable cache */
 };
 /**
  * Setup the PAC55xx clocks with the given struct.
- * @param[in] config CCS Clock configuration struct
- * @return 0 upon success. -1 if configuration is bad.
+ * @param[in] config CCS Clock configuration struct /ref ccs_clk_config
  */
-int ccs_configure_clocks(const struct ccs_clk_config *config);
+void ccs_configure_clocks(const struct ccs_clk_config *config);
 
 /**@}*/
 

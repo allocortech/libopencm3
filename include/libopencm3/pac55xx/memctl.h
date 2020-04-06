@@ -1,7 +1,7 @@
 /**
  * @brief Memory Controller definitions for the Qorvo PAC55xx series of microcontrollers
  *
- * @addtogroup PAC55xx_memctl MEMCTL
+ * @addtogroup PAC55xx_memctl Memory Controller Defines
  * @ingroup PAC55xx_defines
  * @author Kevin Stefanik <kevin@allocor.tech>
  * LGPL License Terms @ref lgpl_license
@@ -35,80 +35,129 @@
 #include <libopencm3/pac55xx/memorymap.h>
 /**@{*/
 
-
 /** @defgroup memctl_reg Memory Controller Configuration Register
 @{*/
 /** Memory Controller Configuration Register */
-#define MEMCTL          MMIO32(MEMCTL_BASE)
-#define MEMCTL_WSTATE_MASK              (0xF)
-#define MEMCTL_WSTATE(ws)               ((ws) & MEMCTL_WSTATE_MASK)
-#define MEMCTL_MCLKDIV_MASK             (0xF)
-#define MEMCTL_MCLKDIV_SHIFT            4
-#define MEMCTL_MCLKDIV(d)               (((d) & MEMCTL_MCLKDIV_MASK) << MEMCTL_MCLKDIV_SHIFT)
-#define MEMCTL_MCLKDIV1     (0)
-#define MEMCTL_MCLKDIV2     (1)
-#define MEMCTL_MCLKDIV3     (2)
-#define MEMCTL_MCLKDIV4     (3)
-#define MEMCTL_MCLKDIV5     (4)
-#define MEMCTL_MCLKDIV6     (5)
-#define MEMCTL_MCLKDIV7     (6)
-#define MEMCTL_MCLKDIV8     (7)
-#define MEMCTL_MCLKDIV9     (8)
-#define MEMCTL_MCLKDIV10    (9)
-#define MEMCTL_MCLKDIV11    (10)
-#define MEMCTL_MCLKDIV12    (11)
-#define MEMCTL_MCLKDIV13    (12)
-#define MEMCTL_MCLKDIV14    (13)
-#define MEMCTL_MCLKDIV15    (14)
-#define MEMCTL_MCLKDIV16    (15)
-#define MEMCTL_WRITEWORDCNT_MASK        (0x3)
-#define MEMCTL_WRITEWORDCNT_SHIFT       8
-#define MEMCTL_WRITEWORDCNT(cnt)        (((cnt) & MEMCTL_WRITEWORDCNT_MASK) << MEMCTL_WRITEWORDCNT_SHIFT)
-#define MEMCTL_SEIE                     BIT16
-#define MEMCTL_DEIE                     BIT17
-#define MEMCTL_INVADDRIE                BIT18
-#define MEMCTL_STBY                     BIT19
-#define MEMCTL_ECCDIS                   BIT20
-#define MEMCTL_CACHEDIS                 BIT21
-#define MEMCTL_MCLKSEL                  BIT22
+#define MEMCTL_MEMCTLR          MMIO32(MEMCTL_BASE)
+#define MEMCTL_MEMCTLR_WSTATE_MASK              (0xF)
+#define MEMCTL_MEMCTLR_WSTATE(ws)               ((ws) & MEMCTL_MEMCTLR_WSTATE_MASK)
+#define MEMCTL_MEMCTLR_MCLKDIV_MASK             (0xF)
+#define MEMCTL_MEMCTLR_MCLKDIV_SHIFT            4
+/* Supported MCLK divisors: 1-16 */
+#define MEMCTL_MEMCTLR_MCLKDIV(div)             (((div-1) & MEMCTL_MEMCTLR_MCLKDIV_MASK) << MEMCTL_MEMCTLR_MCLKDIV_SHIFT)
+#define MEMCTL_MEMCTLR_WRITEWORDCNT_MASK        (0x3)
+#define MEMCTL_MEMCTLR_WRITEWORDCNT_SHIFT       8
+#define MEMCTL_MEMCTLR_WRITEWORDCNT(cnt)        (((cnt) & MEMCTL_MEMCTLR_WRITEWORDCNT_MASK) << MEMCTL_MEMCTLR_WRITEWORDCNT_SHIFT)
+#define MEMCTL_MEMCTLR_SEIE                     BIT16
+#define MEMCTL_MEMCTLR_DEIE                     BIT17
+#define MEMCTL_MEMCTLR_INVADDRIE                BIT18
+#define MEMCTL_MEMCTLR_STBY                     BIT19
+#define MEMCTL_MEMCTLR_ECCDIS                   BIT20
+#define MEMCTL_MEMCTLR_CACHEDIS                 BIT21
+#define MEMCTL_MEMCTLR_MCLKSEL                  BIT22
 /**@}*/
 
 /** @defgroup memstatus_reg Memory Controller Status Register
 @{*/
 /** Memory Controller Status Register */
-#define MEMSTATUS       MMIO32(MEMCTL_BASE + 0x0004)
-#define MEMSTATUS_WBUSY                 BIT0
-#define MEMSTATUS_EBUSY                 BIT1
-#define MEMSTATUS_WRITEWORDCNT_MASK     (0x3)
-#define MEMSTATUS_WRITEWORDCNT_SHIFT    8
-#define MEMSTATUS_WRITEWORDCNT(cnt)     (((cnt) & MEMSTATUS_WRITEWORDCNT_MASK) << MEMSTATUS_WRITEWORDCNT_SHIFT)
-#define MEMSTATUS_SE                    BIT16
-#define MEMSTATUS_DE                    BIT17
-#define MEMSTATUS_INVADDR               BIT18
+#define MEMCTL_MEMSTATUS       MMIO32(MEMCTL_BASE + 0x0004)
+#define MEMCTL_MEMSTATUS_WBUSY                 BIT0
+#define MEMCTL_MEMSTATUS_EBUSY                 BIT1
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT_MASK     (0x3)
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT_SHIFT    8
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT          ((MEMCTL_MEMSTATUS >> MEMCTL_MEMSTATUS_WRITEWORDCNT_SHIFT) & MEMCTL_MEMSTATUS_WRITEWORDCNT_MASK)
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT_4BYTES   (0)
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT_8BYTES   (1)
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT_12BYTES  (2)
+#define MEMCTL_MEMSTATUS_WRITEWORDCNT_16BYTES  (3)
+#define MEMCTL_MEMSTATUS_SE                    BIT16
+#define MEMCTL_MEMSTATUS_DE                    BIT17
+#define MEMCTL_MEMSTATUS_INVADDR               BIT18
 /**@}*/
 
 /** @defgroup flashlock_vals Flash Lock/Write Enable Register values
 @{*/
 /** Flash Lock Access Register */
-#define FLASHLOCK       MMIO32(MEMCTL_BASE + 0x0008)
-#define FLASHLOCK_CLEAR                 (0)
-#define FLASHLOCK_ALLOW_FLASH_WRITE     (0x43DF140A)
-#define FLASHLOCK_ALLOW_MEMCTL_WRITE    (0xD513B490)
-#define FLASHLOCK_ALLOW_INFO2_SWDFUSE   (0x79B4F762)
+#define MEMCTL_FLASHLOCK       MMIO32(MEMCTL_BASE + 0x0008)
+#define MEMCTL_FLASHLOCK_CLEAR                 (0)
+#define MEMCTL_FLASHLOCK_ALLOW_FLASH_WRITE     (0x43DF140A)
+#define MEMCTL_FLASHLOCK_ALLOW_MEMCTL_WRITE    (0xD513B490)
+#define MEMCTL_FLASHLOCK_ALLOW_INFO2_SWDFUSE   (0x79B4F762)
 /**@}*/
 
 /** Flash Page Address Register */
-#define FLASHPAGE       MMIO32(MEMCTL_BASE + 0x000C)
+#define MEMCTL_FLASHPAGE       MMIO32(MEMCTL_BASE + 0x000C)
 /** SWD Unlock Register */
-#define SWDUNLOCK       MMIO32(MEMCTL_BASE + 0x0010)
+#define MEMCTL_SWDUNLOCK       MMIO32(MEMCTL_BASE + 0x0010)
 
 /** @defgroup flasherase_vals Flash Erase Enable Register values
 @{*/
 /** Flash Erase Enable Register */
-#define FLASHERASE      MMIO32(MEMCTL_BASE + 0x0020)
-#define FLASHERASE_PAGE_ERASE           (0x8C799CA7)
-#define FLASHERASE_MASS_PAGE_ERASE      (0x09EE76C9)
-#define FLASHERASE_INFO3_ERASE          (0x1266FF45)
+#define MEMCTL_FLASHERASE      MMIO32(MEMCTL_BASE + 0x0020)
+#define MEMCTL_FLASHERASE_PAGE_ERASE           (0x8C799CA7)
+#define MEMCTL_FLASHERASE_MASS_PAGE_ERASE      (0x09EE76C9)
+#define MEMCTL_FLASHERASE_INFO3_ERASE          (0x1266FF45)
 /**@}*/
+
+/**@}*/
+
+BEGIN_DECLS
+
+/**
+ * @defgroup memctl_api Memory Controller API
+ * @ingroup peripheral_apis
+ * @brief <b>PAC5xx MEMCTL Driver</b>
+ * @author @htmlonly &copy; @endhtmlonly 2020 Kevin Stefanik <kevin@allocor.tech>
+ * @date March 7, 2020
+ *
+ * This library supports the MEMCTL module in the PAC55xx SoC from Qorvo.
+ *
+ * LGPL License Terms @ref lgpl_license
+ */
+
+/*@{*/
+
+/** Set the number of wait states for Flash reads.
+ * @param[in] wstate  Wait states: 0-15
+ */
+void memctl_flash_set_wstate(uint32_t wstate);
+/** Set the MCLK divisor.
+ * @param[in] div  HCLK to MCLK divisor: 1-16
+ */
+void memctl_flash_set_mclkdiv(uint32_t div);
+/** Set WRITEWORDCOUNT to 0 to reset the Flash write data buffer */
+void memctl_flash_reset_write_buffer(void);
+/** Enable Flash Standby Mode */
+void memctl_flash_standby_mode_enable(void);
+/** Disable Flash Standby Mode */
+void memctl_flash_standby_mode_disable(void);
+/** Enable Flash cache */
+void memctl_flash_cache_enable(void);
+/** Disable Flash cache */
+void memctl_flash_cache_disable(void);
+/** Select ROSCCLK as input to Flash Memory Controller */
+void memctl_flash_select_roscclk(void);
+/** Select MCLK as input to Flash Memory Controller */
+void memctl_flash_select_mclk(void);
+/** Enable SRAM ECC */
+void memctl_sram_ecc_enable(void);
+/** Disable SRAM ECC */
+void memctl_sram_ecc_disable(void);
+/** Enable SRAM ECC Single Bit Detection Interrupt */
+void memctl_sram_ecc_single_bit_interrupt_enable(void);
+/** Disable SRAM ECC Single Bit Detection Interrupt */
+void memctl_sram_ecc_single_bit_interrupt_disable(void);
+/** Enable SRAM ECC Dual Bit Detection Interrupt */
+void memctl_sram_ecc_dual_bit_interrupt_enable(void);
+/** Disable SRAM ECC Dual Bit Detection Interrupt */
+void memctl_sram_ecc_dual_bit_interrupt_disable(void);
+/** Enable Invalid Memory Access Interrupt */
+void memctl_invaddr_interrupt_enable(void);
+/** Disable Invalid Memory Access Interrupt */
+void memctl_invaddr_interrupt_disable(void);
+
+/**@}*/
+
+END_DECLS
 
 #endif /* LIBOPENCM3_PAC55XX_MEMCTL_H_ */
