@@ -76,13 +76,13 @@
 /** This bit is active low to indicate an interrupt is pending */
 #define USART_IIR_INTSTATUS     BIT0
 /** TX Holding Register Empty */
-#define USART_IIR_TXEMPTY       (0b0010)
+#define USART_IIR_TXEMPTY       (0x02)
 /** Receive Data Available */
-#define USART_IIR_RXAVAIL       (0b0100)
+#define USART_IIR_RXAVAIL       (0x04)
 /** Receive Line Status */
-#define USART_IIR_RXLINESTAT    (0b0110)
+#define USART_IIR_RXLINESTAT    (0x06)
 /** Receive FIFO Character Time-out */
-#define USART_IIR_RXTIMEOUT     (0b1100)
+#define USART_IIR_RXTIMEOUT     (0x0C)
 /**@}*/
 
 /** @defgroup usart_fcr_bits FIFO Control Register bits
@@ -93,51 +93,40 @@
 #define USART_FCR_RXFIFORST     BIT1
 /** TX FIFO Reset. Write 1 to clear. This bit is self-clearing. */
 #define USART_FCR_TXFIFORST     BIT2
-#define USART_FCR_TXTL_MASK     (0b11)
+#define USART_FCR_TXTL_MASK     (3)
 #define USART_FCR_TXTL_SHIFT    4
-/** TX Trigger Level
- * - 00b: 1 character
- * - 01b: 4 characters
- * - 10b: 8 characters
- * - 11b: 14 characters
- */
+/** TX Trigger Level */
 #define USART_FCR_TXTL(txtl)    (((txtl) & USART_FCR_TXTL_MASK) << USART_FCR_TXTL_SHIFT)
-#define USART_FCR_RXTL_MASK     (0b11)
+#define USART_FCR_RXTL_MASK     (3)
 #define USART_FCR_RXTL_SHIFT    6
-/** RX Trigger Level
- * - 00b: 1 character
- * - 01b: 4 characters
- * - 10b: 8 characters
- * - 11b: 14 characters
- */
+/** RX Trigger Level */
 #define USART_FCR_RXTL(rxtl)    (((rxtl) & USART_FCR_RXTL_MASK) << USART_FCR_RXTL_SHIFT)
+#define USART_FIFO_TRIG_1CHAR   (0)
+#define USART_FIFO_TRIG_4CHAR   (1)
+#define USART_FIFO_TRIG_8CHAR   (2)
+#define USART_FIFO_TRIG_14CHAR  (3)
 /**@}*/
 
 /** @defgroup usart_lcr_bits Line Control Register bits
 @{*/
-#define USART_FIFO_TRIG_1CHAR   (0b00)
-#define USART_FIFO_TRIG_4CHAR   (0b01)
-#define USART_FIFO_TRIG_8CHAR   (0b10)
-#define USART_FIFO_TRIG_14CHAR  (0b11)
-
 /** LCR:WLS 5-bit character length */
-#define USART_DATABITS_5        (0b00)
+#define USART_DATABITS_5        (0)
 /** LCR:WLS 6-bit character length */
-#define USART_DATABITS_6        (0b01)
+#define USART_DATABITS_6        (0x01)
 /** LCR:WLS 7-bit character length */
-#define USART_DATABITS_7        (0b10)
+#define USART_DATABITS_7        (0x02)
 /** LCR:WLS 8-bit character length */
-#define USART_DATABITS_8        (0b11)
+#define USART_DATABITS_8        (0x03)
 /** LCR:PSEL & LCR:PEN Odd parity */
-#define USART_PSELPEN_ODD       (0b001)
+#define USART_PSELPEN_ODD       (0x01)
 /** LCR:PSEL & LCR:PEN Even parity */
-#define USART_PSELPEN_EVEN      (0b011)
+#define USART_PSELPEN_EVEN      (0x03)
 /** LCR:PSEL & LCR:PEN Force 1 stick parity */
-#define USART_PSELPEN_FORCE1    (0b101)
+#define USART_PSELPEN_FORCE1    (0x05)
 /** LCR:PSEL & LCR:PEN Force 0 stick parity */
-#define USART_PSELPEN_FORCE0    (0b111)
+#define USART_PSELPEN_FORCE0    (0x07)
 /** LCR:PSEL & LCR:PEN Disable parity */
-#define USART_PARITY_DISABLE    (0b000)
+#define USART_PARITY_DISABLE    (0)
 /** LCR:PSEL & LCR:PEN Odd parity */
 #define USART_PARITY_ODD        USART_PSELPEN_ODD
 /** LCR:PSEL & LCR:PEN Even parity */
@@ -152,14 +141,14 @@
 #define USART_STOPBITS_1P5      USART_LCR_SBS
 /** LCR:SBS Use 2 stop bits */
 #define USART_STOPBITS_2        USART_LCR_SBS
-#define USART_LCR_WLS_MASK      (0b11)
+#define USART_LCR_WLS_MASK      (3)
 /** Word length select: 5-8 databits */
 #define USART_LCR_WLS(wls)      ((wls) & USART_LCR_WLS_MASK)
 /** Set LCR:SBS for 1.5 or 2 stop bits, Clear for 1 stop bit */
 #define USART_LCR_SBS           BIT2
 /** Enable parity checking */
 #define USART_LCR_PEN           BIT3
-#define USART_LCR_PSELPEN_MASK  (0b0111)
+#define USART_LCR_PSELPEN_MASK  (7)
 #define USART_LCR_PSELPEN_SHIFT 3
 /** LCR:PSEL and LCR:PEN control parity */
 #define USART_LCR_PSELPEN(psel) (((psel) & USART_LCR_PSELPEN_MASK) << USART_LCR_PSELPEN_SHIFT)
@@ -206,7 +195,7 @@ void usart_break_enable(uint32_t usart);
 void usart_break_disable(uint32_t usart);
 void usart_enhanced_enable(uint32_t usart);
 void usart_enhanced_disable(uint32_t usart);
-bool usart_configure_fcr(uint32_t usart, uint8_t tx_depth, uint8_t rx_depth);
+void usart_set_fifo_depth(uint32_t usart, uint8_t tx_depth, uint8_t rx_depth);
 void usart_send(uint32_t usart, uint8_t data);
 uint8_t usart_recv(uint32_t usart);
 void usart_enable_rx_interrupt(uint32_t usart);

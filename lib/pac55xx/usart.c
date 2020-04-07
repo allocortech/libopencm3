@@ -107,21 +107,14 @@ void usart_fifo_disable(uint32_t usart) {
 	USART_FCR(usart) &= ~USART_FCR_FIFOEN;
 }
 
-/** @brief Configure FIFO Control Register
-This register sets the TX and RX FIFO interrupt trigger levels if the FIFOs are enabled.
+/** Set the TX and RX FIFO depth. This function also enables the FIFOs if not already.
 @param[in] usart unsigned 32 bit. USART block register address base @ref usart_reg_base
 @param[in] tx_depth unsigned 8 bit. One of USART_FIFO_TRIG_1/2/4/14CHAR.
 @param[in] rx_depth unsigned 8 bit. One of USART_FIFO_TRIG_1/2/4/14CHAR.
-@return true if the FIFOs are enabled and the set was successful. false if FIFOs are disabled.
 */
-bool usart_configure_fcr(uint32_t usart, uint8_t tx_depth, uint8_t rx_depth) {
-	if (USART_FCR(usart) & USART_FCR_FIFOEN) {
-		USART_FCR(usart) = USART_FCR_TXTL(tx_depth) | USART_FCR_RXTL(rx_depth)
-						| USART_FCR_FIFOEN;
-		return true;
-	}
-	/* do nothing if FIFOs aren't enabled */
-	return false;
+void usart_set_fifo_depth(uint32_t usart, uint8_t tx_depth, uint8_t rx_depth) {
+	USART_FCR(usart) |= USART_FCR_FIFOEN;
+	USART_FCR(usart) = USART_FCR_TXTL(tx_depth) | USART_FCR_RXTL(rx_depth) | USART_FCR_FIFOEN;
 }
 
 /** @brief Write byte to TX FIFO
