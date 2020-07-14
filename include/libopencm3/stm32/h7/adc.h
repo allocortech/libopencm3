@@ -147,8 +147,8 @@
 #define ADC_CFGR2_LSHIFT_VAL(x)		((x) << 28)
 #define ADC_CFGR2_LSHIFT_MASK		(0xF << 28)
 /** OSVR[9:0] Oversampling ratio */
-#define ADC_CFGR2_OSVR_VAL(x)		((x) << 16)
-#define ADC_CFGR2_OSVR_MASK		(0x3FF << 16)
+#define ADC_CFGR2_OVSR_VAL(x)		((x) << 16)
+#define ADC_CFGR2_OVSR_MASK		(0x3FF << 16)
 /** RSHIFT4: Right-shift data after offset 4 correction */
 #define ADC_CFGR2_RSHIFT4		(1 << 14)
 /** RSHIFT4: Right-shift data after offset 3 correction */
