@@ -37,11 +37,12 @@ ARFLAGS		= rcs
 
 OBJS += can.o
 OBJS += ccs.o
+OBJS += can_bit_timing.o
 OBJS += gpio.o
 OBJS += memctl.o
 OBJS += usart.o
 
-VPATH += ../cm3
+VPATH += ../can:../cm3
 
 
 include ../Makefile.include
