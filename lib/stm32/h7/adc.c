@@ -29,7 +29,8 @@
  * The H7 ADC clock can be sourced either from the peripheral bus clock or from
  * a clock configured in the RCC. This is set via \p mode. For silicon revisions
  * of X and greater a clock division by 2 occurs. Then for all revisions the
- * clock is further divided by \p prescale.
+ * clock is further divided by \p prescale if a clock other than the AHB is
+ * used.
  *
  * The ADC may need to be boosted depending on the resulting frequency and
  * silicon revision. @sa adc_set_boost
@@ -48,8 +49,18 @@ uint32_t adc_set_clock_param(uint32_t adc, enum adc_ccr_ckmode mode,
 	reg32 |= mode | prescale;
 	ADC_CCR(adc) = reg32;
 
-	uint32_t div = (prescale >> 17);
-	div *= ((mode >> 16) | 0x1);
+	uint32_t div = 1;
+	if (mode == ADC_CCR_CKMODE_CKX) {
+	  /* Only when we're off a PLL clock can we divide it further.
+	     These are N-1 so that they'll fit in a byte for space savings. */
+	    static const uint8_t kPrescalers[] = { 0, 1, 3, 5, 7, 9, 11, 15, 31, 63,
+	        127, 255 };
+	    div = kPrescalers[prescale >> 18] + 1;
+	} else {
+	  /* Only the divider from the mode matters if we're taking the RCC divider */
+	  static const uint8_t kModeDivs[] = { 1, 1, 2, 4 };
+	  div *= kModeDivs[mode >> 16];
+	}
 
 	if ((DBGMCU_IDCODE & DBGMCU_IDCODE_REV_ID_MASK) >= DBGMCU_IDCODE_REV_ID_X)
 	{

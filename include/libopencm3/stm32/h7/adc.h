@@ -162,8 +162,8 @@
 /** TROSM: triggered regular oversampling mode */
 #define ADC_CFGR2_TROSM			(1 << 9)
 /** OVSS[3:0]: Oversampling right shift */
-#define ADC_CFGR2_TROSM_VAL(x)		((x) << 5)
-#define ADC_CFGR2_TROSM_MASK		(0xF << 5)
+#define ADC_CFGR2_OVSS_VAL(x)   ((x) << 5)
+#define ADC_CFGR2_OVSS_MASK   (0xF << 5)
 /** JOVSE: Injected oversampling enable */
 #define ADC_CFGR2_JOVSE			(1 << 1)
 /** ROVSE: Regular oversampling enable */
