@@ -246,7 +246,7 @@ void adc_set_left_aligned(uint32_t adc)
 		break;
 	}
 
-	ADC_CFGR2(adc) &= ~(ADC_CFGR2_LSHIFT_MASK | ADC_CFGR2_TROSM_MASK);
+	ADC_CFGR2(adc) &= ~(ADC_CFGR2_LSHIFT_MASK | ADC_CFGR2_OVSS_MASK);
 	ADC_CFGR2(adc) |= ADC_CFGR2_LSHIFT_VAL(32 - resbits);
 #endif
 }
@@ -260,7 +260,7 @@ void adc_set_right_aligned(uint32_t adc)
 #ifndef ADC_CFGR2_LSHIFT_VAL
 	ADC_CFGR1(adc) &= ~ADC_CFGR1_ALIGN;
 #else
-	ADC_CFGR2(adc) &= ~(ADC_CFGR2_LSHIFT_MASK | ADC_CFGR2_TROSM_MASK);
+	ADC_CFGR2(adc) &= ~(ADC_CFGR2_LSHIFT_MASK | ADC_CFGR2_OVSS_MASK);
 #endif
 }
 
